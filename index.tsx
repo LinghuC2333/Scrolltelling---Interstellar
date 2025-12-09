@@ -24,16 +24,54 @@ const App = () => {
     gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
-      // 1. Initial State
+      // 1. Initial Setup
       // Set initial state for second text: invisible and slightly pushed down
       gsap.set(desc2Ref.current, { autoAlpha: 0, y: 20 });
-      
-      // Note: We no longer manipulate the flare directly. 
-      // We will rotate the entire .orbital container. 
-      // This automatically rotates the gradient border AND moves the flare along the path.
 
-      // 2. Timeline attached to the "Ghost" container
-      const tl = gsap.timeline({
+      // 2. Entrance Animation (Intro)
+      // Plays immediately on load/refresh
+      const introTl = gsap.timeline({
+        defaults: { ease: "power3.out" }
+      });
+
+      introTl
+        // Status bar fades in first
+        .from(".status-bar", { 
+          y: -20, 
+          autoAlpha: 0, 
+          duration: 1 
+        })
+        // Orbital grows from center (simulating a planet/sun rising)
+        .from(orbitalRef.current, { 
+          scale: 0.6, 
+          autoAlpha: 0, 
+          duration: 1.8,
+          ease: "back.out(1.0)" 
+        }, 0)
+        // Headlines slide up with a stagger
+        .from(".headlines > *", { 
+          y: 40, 
+          autoAlpha: 0, 
+          stagger: 0.15, 
+          duration: 1.2,
+          ease: "power4.out"
+        }, 0.2)
+        // Timeline info slides in from left
+        .from(".timeline > *", { 
+          x: -20, 
+          autoAlpha: 0, 
+          stagger: 0.1, 
+          duration: 1 
+        }, 0.6)
+        // Description text fades up last
+        .from(desc1Ref.current, { 
+          y: 20, 
+          autoAlpha: 0, 
+          duration: 1 
+        }, 0.8);
+
+      // 3. Scroll Interaction Timeline
+      const scrollTl = gsap.timeline({
         scrollTrigger: {
           trigger: ghostContainerRef.current,
           start: "top top", 
@@ -42,25 +80,18 @@ const App = () => {
         }
       });
 
-      // --- Animation Steps ---
+      // --- Scroll Animation Steps ---
 
       // A) Rotate Orbital (Gradient + Flare)
-      // Rotating the parent moves the child (flare) along the arc and rotates the conic gradient.
-      // 120 degrees moves it from ~2 o'clock to ~6 o'clock positions roughly matching the design.
-      tl.to(orbitalRef.current, {
+      scrollTl.to(orbitalRef.current, {
         rotation: 120, 
         ease: "none",
         duration: 1
       }, 0);
 
       // B) Text Switch
-      // Clean sequence: 
-      // 0.0 -> 0.35: Text 1 Fades Out
-      // 0.35 -> 0.45: Tiny Gap/Transition
-      // 0.45 -> 1.0: Text 2 Fades In
-      
       // Step 1: Fade out first text
-      tl.to(desc1Ref.current, {
+      scrollTl.to(desc1Ref.current, {
         autoAlpha: 0,
         y: -30, // Move up as it fades
         ease: "power2.in",
@@ -68,8 +99,7 @@ const App = () => {
       }, 0);
 
       // Step 2: Fade in second text
-      // Start slightly after the first one ends to avoid messy overlap
-      tl.to(desc2Ref.current, {
+      scrollTl.to(desc2Ref.current, {
         autoAlpha: 1,
         y: 0,
         ease: "power2.out",
@@ -77,14 +107,10 @@ const App = () => {
       }, 0.45);
 
       // C) Text Highlight Color
-      // Animate the background position of the .highlight spans.
-      // 0% 0% is top (white), 0% 100% is bottom (accent).
-      // This creates a "filling up" effect from bottom to top.
-      // We start this animation roughly when the second text starts appearing.
-      tl.to(".highlight", {
+      scrollTl.to(".highlight", {
         backgroundPosition: "0% 100%",
         ease: "none",
-        duration: 0.6 // Takes the latter 60% of the scroll to fill up completely
+        duration: 0.6 
       }, 0.4);
 
     }, ghostContainerRef);
