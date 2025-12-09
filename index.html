@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mob.AI 良夜特写</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --screen-width: 393px;
+        --screen-height: 852px;
+        --body-bg: #050505;
+        --screen-bg: #000;
+        --primary-text: #ffffff;
+        --muted-text: rgba(255, 255, 255, 0.8);
+        --accent: #ff803b;
+        --english-font: "Noto Sans SC", "MiSans", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+        --serif-font: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        /* Allow body to grow for scrolling */
+        min-height: 100vh;
+        /* Fix background so it doesn't scroll with content */
+        background: radial-gradient(circle at 50% 20%, #121212 0%, #050505 55%, #000 100%);
+        background-attachment: fixed; 
+        font-family: var(--english-font);
+        color: var(--primary-text);
+        overflow-x: hidden;
+      }
+
+      /* Wrapper for React Root */
+      #root {
+        width: 100%;
+      }
+
+      .screen {
+        position: relative;
+        width: var(--screen-width);
+        min-height: var(--screen-height);
+        height: 100vh;
+        max-height: 900px;
+        background: var(--screen-bg);
+        padding: 44px 32px 32px;
+        overflow: hidden;
+        /* Shadow for better visibility on large screens */
+        box-shadow: 0 0 50px rgba(0,0,0,0.5); 
+      }
+
+      .status-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        font-weight: 500;
+        font-size: 15px;
+        letter-spacing: 0.01em;
+        z-index: 10;
+      }
+
+      .status-time {
+        font-family: "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      }
+
+      .status-icons {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .status-icons span {
+        display: block;
+        background-repeat: no-repeat;
+        background-size: contain;
+      }
+
+      .status-signal {
+        width: 18px;
+        height: 12px;
+        background-image: url("data:image/svg+xml,%3Csvg width='18' height='12' viewBox='0 0 18 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0.5' y='7.5' width='2.5' height='4' fill='%23FFFFFF'/%3E%3Crect x='4.75' y='5.5' width='2.5' height='6' fill='%23FFFFFF'/%3E%3Crect x='9' y='3.5' width='2.5' height='8' fill='%23FFFFFF'/%3E%3Crect x='13.25' y='1.5' width='2.5' height='10' fill='%23FFFFFF'/%3E%3C/svg%3E");
+      }
+
+      .status-wifi {
+        width: 16px;
+        height: 12px;
+        background-image: url("data:image/svg+xml,%3Csvg width='16' height='12' viewBox='0 0 16 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 11C9.10457 11 10 10.1046 10 9C10 7.89543 9.10457 7 8 7C6.89543 7 6 7.89543 6 9C6 10.1046 6.89543 11 8 11Z' fill='%23FFFFFF'/%3E%3Cpath d='M3.34315 6.34315C5.465 4.22129 8.535 4.22129 10.6569 6.34315' stroke='%23FFFFFF' stroke-width='1.3' stroke-linecap='round'/%3E%3Cpath d='M1 4C4.86603 0.133975 11.134 -0.133975 15 4' stroke='%23FFFFFF' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");
+      }
+
+      .status-battery {
+        width: 25px;
+        height: 12px;
+        background-image: url("data:image/svg+xml,%3Csvg width='25' height='12' viewBox='0 0 25 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='0.75' y='1.25' width='19.5' height='9.5' rx='2' stroke='%23FFFFFF' stroke-width='1.5'/%3E%3Crect x='3' y='3' width='15' height='5' rx='1' fill='%23FFFFFF'/%3E%3Crect x='21.5' y='3.5' width='3' height='5' rx='1.5' fill='%23FFFFFF'/%3E%3C/svg%3E");
+      }
+
+      .headlines {
+        margin-top: 152px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .headlines h1 {
+        margin: 0;
+        font-family: var(--serif-font);
+        font-weight: 500;
+        font-size: 40px;
+        line-height: 1.2;
+        letter-spacing: 0.01em;
+      }
+
+      .subheading {
+        margin: 20px 0 12px;
+        font-family: var(--serif-font);
+        font-size: 20px;
+        line-height: 1.3;
+      }
+
+      .movie-meta {
+        margin: 0;
+        font-size: 14px;
+        font-family: var(--english-font);
+        font-weight: 400;
+        letter-spacing: 0.02em;
+      }
+
+      .timeline {
+        margin-top: 113px;
+        font-size: 14px;
+        font-weight: 300;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .accent,
+      .datetime,
+      .publication {
+        margin: 0;
+      }
+
+      .accent {
+        color: var(--accent);
+        letter-spacing: 0.08em;
+      }
+
+      .datetime {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .publication {
+        margin: 0;
+        max-width: 320px;
+        line-height: 1.4;
+      }
+
+      .orbital {
+        position: absolute;
+        width: 362px;
+        height: 362px;
+        left: -122px;
+        top: 426px;
+        border-radius: 50%;
+        pointer-events: none;
+        /* Increased z-index so flare glows OVER text if they overlap, 
+           while pointer-events:none ensures it doesn't block interaction */
+        z-index: 3; 
+      }
+
+      .orbital::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: conic-gradient(
+          from 210deg,
+          #ff803b 0deg,
+          #ffe2ac 90deg,
+          #ffffff 170deg,
+          #ffc7e4 250deg,
+          #ff803b 360deg
+        );
+        -webkit-mask:
+          radial-gradient(closest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+        mask:
+          radial-gradient(closest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+      }
+
+      .flare {
+        position: absolute;
+        width: 52px;
+        height: 52px;
+        top: 39px;
+        left: 293px;
+        transform: translate(-50%, -50%);
+        /* Corrected SVG Data URI: removed duplicate </filter> tag */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='148' height='148' viewBox='0 0 148 148' fill='none'%3E%3Cg filter='url(%23a)'%3E%3Ccircle cx='74' cy='74' r='26' fill='white'/%3E%3C/g%3E%3Cg filter='url(%23b)'%3E%3Ccircle cx='74' cy='74' r='7' fill='white'/%3E%3C/g%3E%3Cdefs%3E%3Cfilter id='a' x='0' y='0' width='148' height='148' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeBlend mode='normal' in='SourceGraphic' in2='BackgroundImageFix' result='shape'/%3E%3CfeGaussianBlur stdDeviation='24' result='effect1_foregroundBlur_5196_1655'/%3E%3C/filter%3E%3Cfilter id='b' x='63' y='63' width='22' height='22' filterUnits='userSpaceOnUse' color-interpolation-filters='sRGB'%3E%3CfeFlood flood-opacity='0' result='BackgroundImageFix'/%3E%3CfeBlend mode='normal' in='SourceGraphic' in2='BackgroundImageFix' result='shape'/%3E%3CfeGaussianBlur stdDeviation='2' result='effect1_foregroundBlur_5196_1655'/%3E%3C/filter%3E%3C/defs%3E%3C/svg%3E");
+        background-size: cover;
+        background-repeat: no-repeat;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .description {
+        position: absolute;
+        bottom: 32px;
+        left: 120px;
+        width: 241px;
+        color: rgba(255, 255, 255, 0.8);
+        font-family: "MiSans VF", var(--english-font);
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 330;
+        line-height: 1.6;
+        z-index: 5;
+      }
+      
+      .description-group {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+      }
+
+      .description p {
+        margin: 0 0 18px;
+      }
+
+      .description p:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Dynamic text fill style */
+      .highlight {
+        /* Gradient: Top is White (text), Bottom is Accent (orange). 
+           We will animate background-position to reveal the bottom part. */
+        background-image: linear-gradient(to top, var(--accent) 50%, var(--primary-text) 50%);
+        background-size: 100% 200%;
+        background-position: 0% 0%; /* Shows top half (white) initially */
+        
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        
+        /* Ensures the background works correctly across wrapped lines */
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+        display: inline;
+      }
+
+      @media (max-width: 430px) {
+        .screen {
+          width: 100%;
+          min-height: 100vh;
+          border-radius: 0;
+        }
+
+        .orbital {
+          left: -31vw;
+          top: 50vh;
+        }
+
+        .description {
+          margin-left: auto;
+          margin-right: 0;
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
